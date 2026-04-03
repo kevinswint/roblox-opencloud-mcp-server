@@ -1,0 +1,40 @@
+{
+  "name": "roblox-opencloud-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Roblox Open Cloud APIs — manage experiences, data stores, messaging, and execute Luau scripts via AI agents",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "roblox-opencloud-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "inspect": "npx @modelcontextprotocol/inspector"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "axios": "^1.7.9",
+    "express": "^4.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "keywords": [
+    "roblox",
+    "open-cloud",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents"
+  ],
+  "license": "MIT"
+}
