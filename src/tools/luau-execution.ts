@@ -83,7 +83,7 @@ Requires API key scope: luau-execution-sessions:write`,
 
         // Submit the execution task
         const task = await makeApiRequest<LuauExecutionTask>(
-          `${baseUrl}/luau-execution-sessions`,
+          `${baseUrl}/luau-execution-session-tasks`,
           "POST",
           { script: params.script },
           undefined,
@@ -175,7 +175,7 @@ Requires API key scope: luau-execution-sessions:read`,
       try {
         const baseUrl = LUAU_EXECUTION_BASE(params.universe_id, params.place_id);
         const result = await makeApiRequest<LuauExecutionTask>(
-          `${baseUrl}/luau-execution-sessions/${params.session_id}`,
+          `${baseUrl}/luau-execution-session-tasks/${params.session_id}`,
           "GET"
         );
 
