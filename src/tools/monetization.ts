@@ -9,7 +9,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { universeIdSchema, responseFormatSchema, pageTokenSchema, pageSizeSchema } from "../schemas/common.js";
 import { makeApiRequest, handleApiError, truncateResponse } from "../services/api-client.js";
-import { CLOUD_V2_BASE_URL } from "../constants.js";
+import { DEVELOPER_PRODUCTS_BASE, GAME_PASSES_BASE } from "../constants.js";
 import { DeveloperProduct, GamePass, ResponseFormat } from "../types.js";
 
 interface ListDevProductsResponse {
@@ -45,8 +45,8 @@ Requires API key scope: universe-developer-products:read`,
     },
     async (params: z.infer<typeof ListDevProductsSchema>) => {
       try {
-        const url = `${CLOUD_V2_BASE_URL}/universes/${params.universe_id}/developer-products`;
-        const queryParams: Record<string, unknown> = { maxPageSize: params.page_size };
+        const url = `${DEVELOPER_PRODUCTS_BASE(params.universe_id)}/creator`;
+        const queryParams: Record<string, unknown> = { pageSize: params.page_size };
         if (params.page_token) queryParams.pageToken = params.page_token;
 
         const data = await makeApiRequest<ListDevProductsResponse>(url, "GET", undefined, queryParams);
@@ -100,7 +100,7 @@ Requires API key scope: universe-developer-products:write`,
     },
     async (params: z.infer<typeof CreateDevProductSchema>) => {
       try {
-        const url = `${CLOUD_V2_BASE_URL}/universes/${params.universe_id}/developer-products`;
+        const url = DEVELOPER_PRODUCTS_BASE(params.universe_id);
         const body = {
           displayName: params.display_name,
           description: params.description,
@@ -147,8 +147,8 @@ Requires API key scope: universe-game-passes:read`,
     },
     async (params: z.infer<typeof ListGamePassesSchema>) => {
       try {
-        const url = `${CLOUD_V2_BASE_URL}/universes/${params.universe_id}/game-passes`;
-        const queryParams: Record<string, unknown> = { maxPageSize: params.page_size };
+        const url = `${GAME_PASSES_BASE(params.universe_id)}/creator`;
+        const queryParams: Record<string, unknown> = { pageSize: params.page_size };
         if (params.page_token) queryParams.pageToken = params.page_token;
 
         const data = await makeApiRequest<ListGamePassesResponse>(url, "GET", undefined, queryParams);
@@ -205,7 +205,7 @@ Requires API key scope: universe-game-passes:write`,
     },
     async (params: z.infer<typeof CreateGamePassSchema>) => {
       try {
-        const url = `${CLOUD_V2_BASE_URL}/universes/${params.universe_id}/game-passes`;
+        const url = GAME_PASSES_BASE(params.universe_id);
         const body: Record<string, unknown> = {
           displayName: params.display_name,
           description: params.description,

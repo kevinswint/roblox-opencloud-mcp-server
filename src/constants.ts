@@ -21,6 +21,13 @@ export const UNIVERSES_V2_BASE = `${CLOUD_V2_BASE_URL}/universes`;
 export const PLACES_V2_BASE = (universeId: string) =>
   `${CLOUD_V2_BASE_URL}/universes/${universeId}/places`;
 
+// Monetization APIs (separate from Cloud v2)
+export const DEVELOPER_PRODUCTS_BASE = (universeId: string) =>
+  `${OPEN_CLOUD_BASE_URL}/developer-products/v2/universes/${universeId}/developer-products`;
+
+export const GAME_PASSES_BASE = (universeId: string) =>
+  `${OPEN_CLOUD_BASE_URL}/game-passes/v1/universes/${universeId}/game-passes`;
+
 // Response limits
 export const CHARACTER_LIMIT = 25000;
 export const DEFAULT_PAGE_SIZE = 20;
