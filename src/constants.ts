@@ -82,6 +82,15 @@ export const TRANSLATE_TEXT_BASE = (universeId: string) =>
 // Legacy Badges
 export const LEGACY_BADGES_BASE = `${OPEN_CLOUD_BASE_URL}/legacy-badges/v1`;
 
+// Public read-only "users" host for legacy endpoints
+export const USERS_V1_BASE = `${OPEN_CLOUD_BASE_URL}/v1`;
+
+// Public thumbnails host (no API key required)
+export const THUMBNAILS_BASE = "https://thumbnails.roblox.com";
+
+// Public games host (legacy game metadata)
+export const GAMES_V1_BASE = "https://games.roblox.com/v1";
+
 // Response limits
 export const CHARACTER_LIMIT = 25000;
 export const DEFAULT_PAGE_SIZE = 20;

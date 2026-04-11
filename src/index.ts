@@ -41,6 +41,10 @@ import { registerUserRestrictionsTools } from "./tools/user-restrictions.js";
 import { registerOrderedDataStoreTools } from "./tools/ordered-data-stores.js";
 import { registerMemoryStoreTools } from "./tools/memory-stores.js";
 import { registerAssetTools } from "./tools/assets.js";
+import { registerGroupTools } from "./tools/groups.js";
+import { registerUserTools } from "./tools/users.js";
+import { registerBadgeTools } from "./tools/badges.js";
+import { registerThumbnailTools } from "./tools/thumbnails.js";
 
 // ── Server Initialization ──────────────────────────────────────────────
 
@@ -62,6 +66,10 @@ registerUserRestrictionsTools(server);
 registerOrderedDataStoreTools(server);
 registerMemoryStoreTools(server);
 registerAssetTools(server);
+registerGroupTools(server);
+registerUserTools(server);
+registerBadgeTools(server);
+registerThumbnailTools(server);
 
 // ── Transport Setup ────────────────────────────────────────────────────
 
