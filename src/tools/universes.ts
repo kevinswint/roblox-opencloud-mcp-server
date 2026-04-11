@@ -10,6 +10,7 @@ import { universeIdSchema, placeIdSchema, responseFormatSchema } from "../schema
 import { makeApiRequest, handleApiError, formatTimestamp } from "../services/api-client.js";
 import { UNIVERSES_V2_BASE, PLACES_V2_BASE } from "../constants.js";
 import { Universe, Place, ResponseFormat } from "../types.js";
+import { wrapTool } from "../services/logger.js";
 
 export function registerUniverseTools(server: McpServer): void {
   // ── Get Universe ─────────────────────────────────────────────────────
@@ -30,7 +31,7 @@ Requires API key scope: universe:read`,
       inputSchema: GetUniverseSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof GetUniverseSchema>) => {
+    wrapTool("roblox_get_universe", async (params: z.infer<typeof GetUniverseSchema>) => {
       try {
         const url = `${UNIVERSES_V2_BASE}/${params.universe_id}`;
         const universe = await makeApiRequest<Universe>(url, "GET");
@@ -72,7 +73,7 @@ Requires API key scope: universe:read`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Update Universe ──────────────────────────────────────────────────
@@ -104,7 +105,7 @@ Requires API key scope: universe:write`,
       inputSchema: UpdateUniverseSchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof UpdateUniverseSchema>) => {
+    wrapTool("roblox_update_universe", async (params: z.infer<typeof UpdateUniverseSchema>) => {
       try {
         const url = `${UNIVERSES_V2_BASE}/${params.universe_id}`;
 
@@ -143,7 +144,7 @@ Requires API key scope: universe:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Restart Experience Servers ───────────────────────────────────────
@@ -165,7 +166,7 @@ Requires API key scope: universe:write`,
       inputSchema: RestartServersSchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     },
-    async (params: z.infer<typeof RestartServersSchema>) => {
+    wrapTool("roblox_restart_servers", async (params: z.infer<typeof RestartServersSchema>) => {
       try {
         const url = `${UNIVERSES_V2_BASE}/${params.universe_id}:restartServers`;
         await makeApiRequest<void>(url, "POST");
@@ -181,7 +182,7 @@ Requires API key scope: universe:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Get Place ────────────────────────────────────────────────────────
@@ -203,7 +204,7 @@ Requires API key scope: universe:read`,
       inputSchema: GetPlaceSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof GetPlaceSchema>) => {
+    wrapTool("roblox_get_place", async (params: z.infer<typeof GetPlaceSchema>) => {
       try {
         const url = `${PLACES_V2_BASE(params.universe_id)}/${params.place_id}`;
         const place = await makeApiRequest<Place>(url, "GET");
@@ -230,7 +231,7 @@ Requires API key scope: universe:read`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Update Place ─────────────────────────────────────────────────────
@@ -255,7 +256,7 @@ Requires API key scope: universe:write`,
       inputSchema: UpdatePlaceSchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof UpdatePlaceSchema>) => {
+    wrapTool("roblox_update_place", async (params: z.infer<typeof UpdatePlaceSchema>) => {
       try {
         const url = `${PLACES_V2_BASE(params.universe_id)}/${params.place_id}`;
         const body: Record<string, unknown> = {};
@@ -284,6 +285,6 @@ Requires API key scope: universe:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 }

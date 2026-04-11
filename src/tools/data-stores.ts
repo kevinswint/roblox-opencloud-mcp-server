@@ -16,6 +16,7 @@ import {
 import { makeApiRequest, handleApiError, truncateResponse, formatTimestamp } from "../services/api-client.js";
 import { DATA_STORES_V2_BASE } from "../constants.js";
 import { DataStoreListResponse, DataStoreEntry, DataStoreEntryListResponse, ResponseFormat } from "../types.js";
+import { wrapTool } from "../services/logger.js";
 
 export function registerDataStoreTools(server: McpServer): void {
   // ── List Data Stores ─────────────────────────────────────────────────
@@ -45,7 +46,7 @@ Requires API key scope: universe-datastores.objects:list`,
       inputSchema: ListDataStoresSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof ListDataStoresSchema>) => {
+    wrapTool("roblox_list_data_stores", async (params: z.infer<typeof ListDataStoresSchema>) => {
       try {
         const url = DATA_STORES_V2_BASE(params.universe_id);
         const queryParams: Record<string, unknown> = { maxPageSize: params.page_size };
@@ -79,7 +80,7 @@ Requires API key scope: universe-datastores.objects:list`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── List Data Store Entries ──────────────────────────────────────────
@@ -105,7 +106,7 @@ Requires API key scope: universe-datastores.objects:list`,
       inputSchema: ListEntriesSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof ListEntriesSchema>) => {
+    wrapTool("roblox_list_data_store_entries", async (params: z.infer<typeof ListEntriesSchema>) => {
       try {
         const base = DATA_STORES_V2_BASE(params.universe_id);
         const url = `${base}/${encodeURIComponent(params.data_store_name)}/entries`;
@@ -143,7 +144,7 @@ Requires API key scope: universe-datastores.objects:list`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Get Data Store Entry ─────────────────────────────────────────────
@@ -167,7 +168,7 @@ Requires API key scope: universe-datastores.objects:read`,
       inputSchema: GetEntrySchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof GetEntrySchema>) => {
+    wrapTool("roblox_get_data_store_entry", async (params: z.infer<typeof GetEntrySchema>) => {
       try {
         const base = DATA_STORES_V2_BASE(params.universe_id);
         const url = `${base}/${encodeURIComponent(params.data_store_name)}/entries/${encodeURIComponent(params.entry_id)}`;
@@ -205,7 +206,7 @@ Requires API key scope: universe-datastores.objects:read`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Set Data Store Entry ─────────────────────────────────────────────
@@ -235,7 +236,7 @@ Requires API key scope: universe-datastores.objects:write`,
       inputSchema: SetEntrySchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof SetEntrySchema>) => {
+    wrapTool("roblox_set_data_store_entry", async (params: z.infer<typeof SetEntrySchema>) => {
       try {
         const base = DATA_STORES_V2_BASE(params.universe_id);
         const url = `${base}/${encodeURIComponent(params.data_store_name)}/entries/${encodeURIComponent(params.entry_id)}`;
@@ -261,7 +262,7 @@ Requires API key scope: universe-datastores.objects:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Delete Data Store Entry ──────────────────────────────────────────
@@ -284,7 +285,7 @@ Requires API key scope: universe-datastores.objects:write`,
       inputSchema: DeleteEntrySchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof DeleteEntrySchema>) => {
+    wrapTool("roblox_delete_data_store_entry", async (params: z.infer<typeof DeleteEntrySchema>) => {
       try {
         const base = DATA_STORES_V2_BASE(params.universe_id);
         const url = `${base}/${encodeURIComponent(params.data_store_name)}/entries/${encodeURIComponent(params.entry_id)}`;
@@ -301,6 +302,6 @@ Requires API key scope: universe-datastores.objects:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 }

@@ -11,6 +11,7 @@ import { universeIdSchema, responseFormatSchema, pageTokenSchema, pageSizeSchema
 import { makeApiRequest, handleApiError, truncateResponse } from "../services/api-client.js";
 import { DEVELOPER_PRODUCTS_BASE, GAME_PASSES_BASE } from "../constants.js";
 import { DeveloperProduct, GamePass, ResponseFormat } from "../types.js";
+import { wrapTool } from "../services/logger.js";
 
 interface ListDevProductsResponse {
   developerProducts: DeveloperProduct[];
@@ -43,7 +44,7 @@ Requires API key scope: universe-developer-products:read`,
       inputSchema: ListDevProductsSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof ListDevProductsSchema>) => {
+    wrapTool("roblox_list_developer_products", async (params: z.infer<typeof ListDevProductsSchema>) => {
       try {
         const url = `${DEVELOPER_PRODUCTS_BASE(params.universe_id)}/creator`;
         const queryParams: Record<string, unknown> = { pageSize: params.page_size };
@@ -73,7 +74,7 @@ Requires API key scope: universe-developer-products:read`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Create Developer Product ─────────────────────────────────────────
@@ -98,7 +99,7 @@ Requires API key scope: universe-developer-products:write`,
       inputSchema: CreateDevProductSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (params: z.infer<typeof CreateDevProductSchema>) => {
+    wrapTool("roblox_create_developer_product", async (params: z.infer<typeof CreateDevProductSchema>) => {
       try {
         const url = DEVELOPER_PRODUCTS_BASE(params.universe_id);
         const body = {
@@ -122,7 +123,7 @@ Requires API key scope: universe-developer-products:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── List Game Passes ─────────────────────────────────────────────────
@@ -145,7 +146,7 @@ Requires API key scope: universe-game-passes:read`,
       inputSchema: ListGamePassesSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (params: z.infer<typeof ListGamePassesSchema>) => {
+    wrapTool("roblox_list_game_passes", async (params: z.infer<typeof ListGamePassesSchema>) => {
       try {
         const url = `${GAME_PASSES_BASE(params.universe_id)}/creator`;
         const queryParams: Record<string, unknown> = { pageSize: params.page_size };
@@ -177,7 +178,7 @@ Requires API key scope: universe-game-passes:read`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Create Game Pass ─────────────────────────────────────────────────
@@ -203,7 +204,7 @@ Requires API key scope: universe-game-passes:write`,
       inputSchema: CreateGamePassSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (params: z.infer<typeof CreateGamePassSchema>) => {
+    wrapTool("roblox_create_game_pass", async (params: z.infer<typeof CreateGamePassSchema>) => {
       try {
         const url = GAME_PASSES_BASE(params.universe_id);
         const body: Record<string, unknown> = {
@@ -230,6 +231,6 @@ Requires API key scope: universe-game-passes:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 }

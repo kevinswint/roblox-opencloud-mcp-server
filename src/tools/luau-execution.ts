@@ -12,6 +12,7 @@ import { universeIdSchema, placeIdSchema, responseFormatSchema } from "../schema
 import { makeApiRequest, handleApiError, formatTimestamp } from "../services/api-client.js";
 import { LUAU_EXECUTION_BASE, LUAU_EXECUTION_TIMEOUT_MS, LUAU_POLL_INTERVAL_MS, LUAU_MAX_POLL_ATTEMPTS } from "../constants.js";
 import { LuauExecutionTask, ResponseFormat } from "../types.js";
+import { wrapTool } from "../services/logger.js";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -77,7 +78,7 @@ Requires API key scope: luau-execution-sessions:write`,
         openWorldHint: true,
       },
     },
-    async (params: z.infer<typeof ExecuteLuauSchema>) => {
+    wrapTool("roblox_execute_luau", async (params: z.infer<typeof ExecuteLuauSchema>) => {
       try {
         const baseUrl = LUAU_EXECUTION_BASE(params.universe_id, params.place_id);
 
@@ -143,7 +144,7 @@ Requires API key scope: luau-execution-sessions:write`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 
   // ── Get Luau Execution Task ──────────────────────────────────────────
@@ -171,7 +172,7 @@ Requires API key scope: luau-execution-sessions:read`,
         openWorldHint: true,
       },
     },
-    async (params: z.infer<typeof GetTaskSchema>) => {
+    wrapTool("roblox_get_luau_task", async (params: z.infer<typeof GetTaskSchema>) => {
       try {
         const baseUrl = LUAU_EXECUTION_BASE(params.universe_id, params.place_id);
         const result = await makeApiRequest<LuauExecutionTask>(
@@ -197,6 +198,6 @@ Requires API key scope: luau-execution-sessions:read`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 }

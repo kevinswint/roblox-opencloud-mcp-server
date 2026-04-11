@@ -11,6 +11,7 @@ import { universeIdSchema, responseFormatSchema } from "../schemas/common.js";
 import { makeApiRequest, handleApiError } from "../services/api-client.js";
 import { MESSAGING_V1_BASE } from "../constants.js";
 import { ResponseFormat } from "../types.js";
+import { wrapTool } from "../services/logger.js";
 
 export function registerMessagingTools(server: McpServer): void {
   // ── Publish Message to Topic ─────────────────────────────────────────
@@ -58,7 +59,7 @@ Requires API key scope: universe.messaging-service:publish`,
       inputSchema: PublishMessageSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (params: z.infer<typeof PublishMessageSchema>) => {
+    wrapTool("roblox_publish_message", async (params: z.infer<typeof PublishMessageSchema>) => {
       try {
         const url = `${MESSAGING_V1_BASE(params.universe_id)}/topics/${encodeURIComponent(params.topic)}`;
         await makeApiRequest<void>(url, "POST", { message: params.message });
@@ -78,6 +79,6 @@ Requires API key scope: universe.messaging-service:publish`,
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };
       }
-    }
+    })
   );
 }

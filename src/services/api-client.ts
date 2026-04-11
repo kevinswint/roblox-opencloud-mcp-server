@@ -7,6 +7,7 @@
 
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { API_TIMEOUT_MS, CHARACTER_LIMIT } from "../constants.js";
+import { rateLimiter } from "./rate-limiter.js";
 
 // API key loaded from environment
 function getApiKey(): string {
@@ -45,6 +46,7 @@ export async function makeApiRequest<T>(
     },
   };
 
+  await rateLimiter.acquire();
   const response = await axios(config);
   return response.data as T;
 }
