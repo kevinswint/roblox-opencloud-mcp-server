@@ -40,6 +40,7 @@ import { registerSecretsTools } from "./tools/secrets.js";
 import { registerUserRestrictionsTools } from "./tools/user-restrictions.js";
 import { registerOrderedDataStoreTools } from "./tools/ordered-data-stores.js";
 import { registerMemoryStoreTools } from "./tools/memory-stores.js";
+import { registerAssetTools } from "./tools/assets.js";
 
 // ── Server Initialization ──────────────────────────────────────────────
 
@@ -60,6 +61,7 @@ registerSecretsTools(server);
 registerUserRestrictionsTools(server);
 registerOrderedDataStoreTools(server);
 registerMemoryStoreTools(server);
+registerAssetTools(server);
 
 // ── Transport Setup ────────────────────────────────────────────────────
 

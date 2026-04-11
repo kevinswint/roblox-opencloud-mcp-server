@@ -6,6 +6,7 @@
  */
 
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import FormData from "form-data";
 import { API_TIMEOUT_MS, CHARACTER_LIMIT } from "../constants.js";
 import { rateLimiter } from "./rate-limiter.js";
 
@@ -43,6 +44,37 @@ export async function makeApiRequest<T>(
       "Content-Type": "application/json",
       Accept: "application/json",
       ...additionalHeaders,
+    },
+  };
+
+  await rateLimiter.acquire();
+  const response = await axios(config);
+  return response.data as T;
+}
+
+/**
+ * Make a multipart/form-data request — used for asset uploads where the
+ * request body includes both JSON metadata and binary file content.
+ */
+export async function makeMultipartRequest<T>(
+  url: string,
+  form: FormData,
+  method: "POST" | "PATCH" = "POST",
+  params?: Record<string, unknown>,
+  timeoutMs: number = API_TIMEOUT_MS
+): Promise<T> {
+  const config: AxiosRequestConfig = {
+    method,
+    url,
+    data: form,
+    params,
+    timeout: timeoutMs,
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
+    headers: {
+      ...form.getHeaders(),
+      "x-api-key": getApiKey(),
+      Accept: "application/json",
     },
   };
 
