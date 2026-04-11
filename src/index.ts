@@ -38,6 +38,8 @@ import { registerCreatorStoreTools } from "./tools/creator-store.js";
 import { registerConfigTools } from "./tools/config.js";
 import { registerSecretsTools } from "./tools/secrets.js";
 import { registerUserRestrictionsTools } from "./tools/user-restrictions.js";
+import { registerOrderedDataStoreTools } from "./tools/ordered-data-stores.js";
+import { registerMemoryStoreTools } from "./tools/memory-stores.js";
 
 // ── Server Initialization ──────────────────────────────────────────────
 
@@ -56,6 +58,8 @@ registerCreatorStoreTools(server);
 registerConfigTools(server);
 registerSecretsTools(server);
 registerUserRestrictionsTools(server);
+registerOrderedDataStoreTools(server);
+registerMemoryStoreTools(server);
 
 // ── Transport Setup ────────────────────────────────────────────────────
 
