@@ -45,6 +45,8 @@ import { registerGroupTools } from "./tools/groups.js";
 import { registerUserTools } from "./tools/users.js";
 import { registerBadgeTools } from "./tools/badges.js";
 import { registerThumbnailTools } from "./tools/thumbnails.js";
+import { registerNotificationTools } from "./tools/notifications.js";
+import { registerGenerativeAiTools } from "./tools/generative-ai.js";
 
 // ── Server Initialization ──────────────────────────────────────────────
 
@@ -70,6 +72,8 @@ registerGroupTools(server);
 registerUserTools(server);
 registerBadgeTools(server);
 registerThumbnailTools(server);
+registerNotificationTools(server);
+registerGenerativeAiTools(server);
 
 // ── Transport Setup ────────────────────────────────────────────────────
 
