@@ -34,6 +34,7 @@ import { registerDataStoreTools } from "./tools/data-stores.js";
 import { registerMessagingTools } from "./tools/messaging.js";
 import { registerUniverseTools } from "./tools/universes.js";
 import { registerMonetizationTools } from "./tools/monetization.js";
+import { registerCreatorStoreTools } from "./tools/creator-store.js";
 
 // ── Server Initialization ──────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ registerDataStoreTools(server);
 registerMessagingTools(server);
 registerUniverseTools(server);
 registerMonetizationTools(server);
+registerCreatorStoreTools(server);
 
 // ── Transport Setup ────────────────────────────────────────────────────
 

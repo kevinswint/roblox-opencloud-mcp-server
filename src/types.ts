@@ -122,3 +122,284 @@ export interface RobloxApiError {
   message: string;
   details?: unknown[];
 }
+
+// Creator Store
+export interface CreatorStoreProduct {
+  [key: string]: unknown;
+  path: string;
+  displayName?: string;
+  description?: string;
+  basePrice?: { currencyCode: string; quantity: { significand: number; exponent: number } };
+  productType?: string;
+  sellerId?: string;
+  assetId?: string;
+  purchaseable?: boolean;
+}
+
+// Config API
+export interface ConfigVersion {
+  [key: string]: unknown;
+  path: string;
+  etag?: string;
+  createTime?: string;
+  updateTime?: string;
+  data?: Record<string, unknown>;
+}
+
+export interface ConfigRevisionListResponse {
+  revisions: Array<{ path: string; createTime?: string; etag?: string }>;
+  nextPageToken?: string;
+}
+
+// Secrets
+export interface UniverseSecret {
+  [key: string]: unknown;
+  path: string;
+  name: string;
+  rotationFrequency?: string;
+  createTime?: string;
+  updateTime?: string;
+}
+
+export interface UniverseSecretListResponse {
+  secrets: UniverseSecret[];
+  nextPageToken?: string;
+}
+
+// Ordered Data Stores
+export interface OrderedDataStoreEntry {
+  [key: string]: unknown;
+  path: string;
+  id?: string;
+  value: number;
+  createTime?: string;
+  updateTime?: string;
+}
+
+export interface OrderedDataStoreEntryListResponse {
+  orderedDataStoreEntries?: OrderedDataStoreEntry[];
+  entries?: OrderedDataStoreEntry[];
+  nextPageToken?: string;
+}
+
+// Memory Stores
+export interface MemoryStoreQueueItem {
+  [key: string]: unknown;
+  id?: string;
+  value: unknown;
+  priority?: number;
+  expiration?: string;
+}
+
+export interface MemoryStoreSortedMapItem {
+  [key: string]: unknown;
+  path: string;
+  id?: string;
+  value: unknown;
+  sortKey?: number | string;
+  expireTime?: string;
+  etag?: string;
+}
+
+export interface MemoryStoreSortedMapListResponse {
+  memoryStoreSortedMapItems?: MemoryStoreSortedMapItem[];
+  items?: MemoryStoreSortedMapItem[];
+  nextPageToken?: string;
+}
+
+// Assets
+export interface Asset {
+  [key: string]: unknown;
+  path: string;
+  revisionId?: string;
+  revisionCreateTime?: string;
+  assetId?: string;
+  displayName?: string;
+  description?: string;
+  assetType?: string;
+  creationContext?: { creator?: { userId?: string; groupId?: string } };
+  moderationResult?: { moderationState?: string };
+  state?: string;
+}
+
+export interface AssetOperation {
+  [key: string]: unknown;
+  path: string;
+  done?: boolean;
+  response?: Asset;
+  error?: { code: string; message: string };
+}
+
+export interface AssetVersion {
+  [key: string]: unknown;
+  path: string;
+  createTime?: string;
+  creationContext?: { creator?: { userId?: string; groupId?: string } };
+}
+
+export interface AssetVersionListResponse {
+  assetVersions?: AssetVersion[];
+  nextPageToken?: string;
+}
+
+// Groups
+export interface Group {
+  [key: string]: unknown;
+  path: string;
+  id?: string;
+  displayName?: string;
+  description?: string;
+  owner?: string;
+  memberCount?: number;
+  verified?: boolean;
+  publicEntryAllowed?: boolean;
+  locked?: boolean;
+}
+
+export interface GroupMembership {
+  [key: string]: unknown;
+  path: string;
+  user?: string;
+  role?: string;
+  createTime?: string;
+  updateTime?: string;
+}
+
+export interface GroupMembershipListResponse {
+  groupMemberships?: GroupMembership[];
+  nextPageToken?: string;
+}
+
+export interface GroupRole {
+  [key: string]: unknown;
+  path: string;
+  id?: string;
+  displayName?: string;
+  description?: string;
+  rank?: number;
+  memberCount?: number;
+  permissions?: Record<string, boolean>;
+}
+
+export interface GroupRoleListResponse {
+  groupRoles?: GroupRole[];
+  nextPageToken?: string;
+}
+
+export interface GroupJoinRequest {
+  [key: string]: unknown;
+  path: string;
+  user?: string;
+  createTime?: string;
+}
+
+export interface GroupJoinRequestListResponse {
+  groupJoinRequests?: GroupJoinRequest[];
+  nextPageToken?: string;
+}
+
+export interface GroupShout {
+  [key: string]: unknown;
+  path: string;
+  content?: string;
+  poster?: string;
+  createTime?: string;
+  updateTime?: string;
+}
+
+// Users
+export interface User {
+  [key: string]: unknown;
+  path: string;
+  id?: string;
+  name?: string;
+  displayName?: string;
+  createTime?: string;
+  about?: string;
+  locale?: string;
+  premium?: boolean;
+  socialNetworkProfiles?: Record<string, string>;
+}
+
+export interface InventoryItem {
+  [key: string]: unknown;
+  path: string;
+  assetDetails?: Record<string, unknown>;
+  badgeDetails?: Record<string, unknown>;
+  gamePassDetails?: Record<string, unknown>;
+  privateServerDetails?: Record<string, unknown>;
+  addTime?: string;
+}
+
+export interface InventoryItemListResponse {
+  inventoryItems?: InventoryItem[];
+  nextPageToken?: string;
+}
+
+// User Restrictions (bans)
+export interface UserRestriction {
+  [key: string]: unknown;
+  path: string;
+  user?: string;
+  gameJoinRestriction?: {
+    active?: boolean;
+    startTime?: string;
+    duration?: string;
+    privateReason?: string;
+    displayReason?: string;
+    excludeAltAccounts?: boolean;
+    inherited?: boolean;
+  };
+}
+
+export interface UserRestrictionListResponse {
+  userRestrictions?: UserRestriction[];
+  nextPageToken?: string;
+}
+
+// Notifications
+export interface UserNotification {
+  [key: string]: unknown;
+  path: string;
+  source?: { universe: string };
+  payload?: {
+    type?: string;
+    messageId?: string;
+    parameters?: Record<string, { stringValue?: string }>;
+    joinExperience?: { launchData?: string };
+    analyticsData?: { category?: string };
+  };
+}
+
+// Generative AI
+export interface SpeechAssetOperation {
+  [key: string]: unknown;
+  path: string;
+  done?: boolean;
+  response?: { path: string; assetId?: string };
+  error?: { code: string; message: string };
+}
+
+export interface TranslateTextResponse {
+  [key: string]: unknown;
+  translations?: Array<{
+    targetLanguageCode: string;
+    text: string;
+  }>;
+}
+
+// Badges
+export interface Badge {
+  [key: string]: unknown;
+  id?: number;
+  name?: string;
+  displayName?: string;
+  description?: string;
+  enabled?: boolean;
+  iconImageId?: number;
+  iconImageAssetId?: number;
+  created?: string;
+  updated?: string;
+  statistics?: { pastDayAwardedCount?: number; awardedCount?: number; winRatePercentage?: number };
+  awardingUniverse?: { id?: number; name?: string; rootPlaceId?: number };
+}
