@@ -35,6 +35,9 @@ import { registerMessagingTools } from "./tools/messaging.js";
 import { registerUniverseTools } from "./tools/universes.js";
 import { registerMonetizationTools } from "./tools/monetization.js";
 import { registerCreatorStoreTools } from "./tools/creator-store.js";
+import { registerConfigTools } from "./tools/config.js";
+import { registerSecretsTools } from "./tools/secrets.js";
+import { registerUserRestrictionsTools } from "./tools/user-restrictions.js";
 
 // ── Server Initialization ──────────────────────────────────────────────
 
@@ -50,6 +53,9 @@ registerMessagingTools(server);
 registerUniverseTools(server);
 registerMonetizationTools(server);
 registerCreatorStoreTools(server);
+registerConfigTools(server);
+registerSecretsTools(server);
+registerUserRestrictionsTools(server);
 
 // ── Transport Setup ────────────────────────────────────────────────────
 

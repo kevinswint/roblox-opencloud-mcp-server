@@ -147,6 +147,7 @@ export interface ConfigVersion {
 }
 
 export interface ConfigRevisionListResponse {
+  [key: string]: unknown;
   revisions: Array<{ path: string; createTime?: string; etag?: string }>;
   nextPageToken?: string;
 }
@@ -162,6 +163,7 @@ export interface UniverseSecret {
 }
 
 export interface UniverseSecretListResponse {
+  [key: string]: unknown;
   secrets: UniverseSecret[];
   nextPageToken?: string;
 }
@@ -177,6 +179,7 @@ export interface OrderedDataStoreEntry {
 }
 
 export interface OrderedDataStoreEntryListResponse {
+  [key: string]: unknown;
   orderedDataStoreEntries?: OrderedDataStoreEntry[];
   entries?: OrderedDataStoreEntry[];
   nextPageToken?: string;
@@ -202,6 +205,7 @@ export interface MemoryStoreSortedMapItem {
 }
 
 export interface MemoryStoreSortedMapListResponse {
+  [key: string]: unknown;
   memoryStoreSortedMapItems?: MemoryStoreSortedMapItem[];
   items?: MemoryStoreSortedMapItem[];
   nextPageToken?: string;
@@ -238,6 +242,7 @@ export interface AssetVersion {
 }
 
 export interface AssetVersionListResponse {
+  [key: string]: unknown;
   assetVersions?: AssetVersion[];
   nextPageToken?: string;
 }
@@ -266,6 +271,7 @@ export interface GroupMembership {
 }
 
 export interface GroupMembershipListResponse {
+  [key: string]: unknown;
   groupMemberships?: GroupMembership[];
   nextPageToken?: string;
 }
@@ -282,6 +288,7 @@ export interface GroupRole {
 }
 
 export interface GroupRoleListResponse {
+  [key: string]: unknown;
   groupRoles?: GroupRole[];
   nextPageToken?: string;
 }
@@ -294,6 +301,7 @@ export interface GroupJoinRequest {
 }
 
 export interface GroupJoinRequestListResponse {
+  [key: string]: unknown;
   groupJoinRequests?: GroupJoinRequest[];
   nextPageToken?: string;
 }
@@ -332,6 +340,7 @@ export interface InventoryItem {
 }
 
 export interface InventoryItemListResponse {
+  [key: string]: unknown;
   inventoryItems?: InventoryItem[];
   nextPageToken?: string;
 }
@@ -353,6 +362,7 @@ export interface UserRestriction {
 }
 
 export interface UserRestrictionListResponse {
+  [key: string]: unknown;
   userRestrictions?: UserRestriction[];
   nextPageToken?: string;
 }
