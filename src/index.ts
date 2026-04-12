@@ -23,6 +23,7 @@
  *   claude mcp add roblox-opencloud -- env ROBLOX_API_KEY=your_key node /path/to/dist/index.js
  */
 
+import crypto from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -113,8 +114,13 @@ async function runHTTP(): Promise<void> {
   // Auth middleware for /mcp — requires Bearer token when MCP_AUTH_TOKEN is set
   app.post("/mcp", (req, res, next) => {
     if (authToken) {
-      const header = req.headers.authorization;
-      if (!header || header !== `Bearer ${authToken}`) {
+      const header = req.headers.authorization ?? "";
+      const expected = `Bearer ${authToken}`;
+      // Timing-safe comparison: hash both sides to normalize length,
+      // preventing timing side-channel leaks on token value or length.
+      const headerHash = crypto.createHash("sha256").update(header).digest();
+      const expectedHash = crypto.createHash("sha256").update(expected).digest();
+      if (!crypto.timingSafeEqual(headerHash, expectedHash)) {
         res.status(401).json({ error: "Unauthorized. Provide Authorization: Bearer <MCP_AUTH_TOKEN>." });
         return;
       }
