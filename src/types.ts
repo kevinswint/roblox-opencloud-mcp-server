@@ -157,9 +157,10 @@ export interface ConfigRevisionListResponse {
 // Secrets
 export interface UniverseSecret {
   [key: string]: unknown;
-  path: string;
-  name: string;
-  rotationFrequency?: string;
+  path?: string;
+  id?: string;
+  key_id?: string;
+  domain?: string;
   createTime?: string;
   updateTime?: string;
 }
@@ -168,6 +169,7 @@ export interface UniverseSecretListResponse {
   [key: string]: unknown;
   secrets: UniverseSecret[];
   nextPageToken?: string;
+  cursor?: string;
 }
 
 // Ordered Data Stores

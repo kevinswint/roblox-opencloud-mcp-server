@@ -7,7 +7,7 @@ and Memory Stores, ship monetization products, handle moderation,
 send experience notifications, and more — from inside Claude Code,
 Claude Desktop, Cursor, or any MCP-compatible client.
 
-> **v0.1** — first public cut. **95 tools** across **18 domains**.
+> **v0.1.1** — **96 tools** across **18 domains**.
 > Paired with a strategic [LIMITATIONS.md](LIMITATIONS.md) that maps
 > the programmatic gaps in the Creator Hub surface. The server is
 > as useful for telling you what you _can't_ do from outside Roblox
@@ -79,7 +79,7 @@ no custom transport. Swap between them by flipping `TRANSPORT`.
 
 ---
 
-## Tool index (95 tools)
+## Tool index (96 tools)
 
 Run `npm run list-tools` to regenerate this list from the source of
 truth. Below is a hand-grouped view.
@@ -169,12 +169,13 @@ truth. Below is a hand-grouped view.
 | `roblox_list_config_revisions` | List revision history |
 | `roblox_restore_config_revision` | Restore a previous revision as current |
 
-### Universe Secrets (4)
+### Universe Secrets (5)
 | Tool | What it does |
 |---|---|
 | `roblox_list_secrets` | List secrets for a universe |
-| `roblox_create_secret` | Create a new secret |
-| `roblox_update_secret` | Rotate a secret value |
+| `roblox_get_secret_public_key` | Get the encryption public key for a universe |
+| `roblox_create_secret` | Create a new secret (auto-encrypts with LibSodium sealed box) |
+| `roblox_update_secret` | Rotate a secret value (auto-encrypts with LibSodium sealed box) |
 | `roblox_delete_secret` | Delete a secret |
 
 ### Moderation — User Restrictions (4)
