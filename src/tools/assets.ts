@@ -66,11 +66,42 @@ function contentTypeForFile(filePath: string): string {
   return map[ext] || "application/octet-stream";
 }
 
+/** Max file size for asset uploads (50 MB) */
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+
 function readFileOrThrow(filePath: string): Buffer {
   const absolute = path.resolve(filePath);
+
+  // Path traversal guard: reject paths that escape the working directory.
+  // This prevents an agent from reading /etc/passwd, ~/.ssh/id_rsa, .env, etc.
+  const cwd = process.cwd();
+  if (!absolute.startsWith(cwd + path.sep) && absolute !== cwd) {
+    throw new Error(
+      `Security: file_path must be within the working directory (${cwd}). ` +
+      `Got: ${absolute}. Use a relative path to a file inside the project.`
+    );
+  }
+
+  // Reject symlinks that escape the working directory
+  if (fs.lstatSync(absolute, { throwIfNoEntry: false })?.isSymbolicLink()) {
+    const target = fs.realpathSync(absolute);
+    if (!target.startsWith(cwd + path.sep)) {
+      throw new Error(`Security: symlink ${absolute} points outside working directory to ${target}`);
+    }
+  }
+
   if (!fs.existsSync(absolute)) {
     throw new Error(`File not found: ${absolute}`);
   }
+
+  const stats = fs.statSync(absolute);
+  if (stats.size > MAX_UPLOAD_BYTES) {
+    throw new Error(
+      `File too large: ${(stats.size / 1024 / 1024).toFixed(1)} MB exceeds ` +
+      `${MAX_UPLOAD_BYTES / 1024 / 1024} MB limit.`
+    );
+  }
+
   return fs.readFileSync(absolute);
 }
 

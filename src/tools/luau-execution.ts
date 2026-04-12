@@ -92,6 +92,13 @@ Requires API key scope: luau-execution-sessions:write`,
         );
 
         const taskPath = task.path;
+
+        // Validate task path to prevent path traversal via untrusted API response
+        const LUAU_PATH_RE = /^universes\/\d+\/places\/\d+\/(?:versions\/\d+\/)?luau-execution-session-tasks\/.+$/;
+        if (!taskPath || !LUAU_PATH_RE.test(taskPath)) {
+          throw new Error(`Unexpected task path format from Roblox API: ${taskPath}`);
+        }
+
         const maxAttempts = Math.min(
           Math.ceil(params.timeout_seconds / (LUAU_POLL_INTERVAL_MS / 1000)),
           LUAU_MAX_POLL_ATTEMPTS

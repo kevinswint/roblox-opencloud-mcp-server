@@ -99,10 +99,28 @@ async function runHTTP(): Promise<void> {
     process.exit(1);
   }
 
-  const app = express();
-  app.use(express.json());
+  const authToken = process.env.MCP_AUTH_TOKEN;
+  if (!authToken) {
+    console.error(
+      "WARNING: MCP_AUTH_TOKEN not set. HTTP endpoint is UNAUTHENTICATED.\n" +
+      "Set MCP_AUTH_TOKEN to require Bearer authentication on /mcp."
+    );
+  }
 
-  app.post("/mcp", async (req, res) => {
+  const app = express();
+  app.use(express.json({ limit: "1mb" }));
+
+  // Auth middleware for /mcp — requires Bearer token when MCP_AUTH_TOKEN is set
+  app.post("/mcp", (req, res, next) => {
+    if (authToken) {
+      const header = req.headers.authorization;
+      if (!header || header !== `Bearer ${authToken}`) {
+        res.status(401).json({ error: "Unauthorized. Provide Authorization: Bearer <MCP_AUTH_TOKEN>." });
+        return;
+      }
+    }
+    next();
+  }, async (req, res) => {
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
@@ -112,9 +130,9 @@ async function runHTTP(): Promise<void> {
     await transport.handleRequest(req, res, req.body);
   });
 
-  // Health check
+  // Health check (no auth required)
   app.get("/health", (_req, res) => {
-    res.json({ status: "ok", server: "roblox-opencloud-mcp-server", version: "0.1.0" });
+    res.json({ status: "ok", server: "roblox-opencloud-mcp-server", version: "0.1.1" });
   });
 
   const port = parseInt(process.env.PORT || "3000");

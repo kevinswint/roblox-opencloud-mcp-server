@@ -90,15 +90,18 @@ export function wrapTool<A, R extends ToolResult>(
       return result;
     } catch (error) {
       const latencyMs = Date.now() - startTs;
+      const msg = error instanceof Error ? error.message : String(error);
       logToolCall({
         ts: new Date().toISOString(),
         tool: name,
         inputHash,
         latencyMs,
         status: "error",
-        errorMessage: error instanceof Error ? error.message : String(error),
+        errorMessage: msg,
       });
-      throw error;
+      // Return an MCP error response instead of re-throwing, which would
+      // crash the MCP transport connection on unhandled exceptions.
+      return { content: [{ type: "text" as const, text: `Error in ${name}: ${msg}` }] } as R;
     }
   };
 }

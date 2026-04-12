@@ -34,7 +34,7 @@ export const CREATOR_STORE_PRODUCTS_BASE = `${CLOUD_V2_BASE_URL}/creator-store-p
 // Configs API (GA March 10, 2026) — different hostname/path
 export const CONFIGS_V1_BASE = `${OPEN_CLOUD_BASE_URL}/creator-configs-public-api/v1`;
 export const CONFIGS_REPOSITORY_BASE = (universeId: string, repository: string) =>
-  `${CONFIGS_V1_BASE}/configs/universes/${universeId}/repositories/${repository}`;
+  `${CONFIGS_V1_BASE}/configs/universes/${universeId}/repositories/${encodeURIComponent(repository)}`;
 
 // Secrets (nested under Universes)
 export const UNIVERSE_SECRETS_BASE = (universeId: string) =>

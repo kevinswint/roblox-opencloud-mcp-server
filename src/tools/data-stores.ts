@@ -51,7 +51,10 @@ Requires API key scope: universe-datastores.objects:list`,
         const url = DATA_STORES_V2_BASE(params.universe_id);
         const queryParams: Record<string, unknown> = { maxPageSize: params.page_size };
         if (params.page_token) queryParams.pageToken = params.page_token;
-        if (params.prefix) queryParams.filter = `id.startsWith("${params.prefix}")`;
+        if (params.prefix) {
+          const safe = params.prefix.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+          queryParams.filter = `id.startsWith("${safe}")`;
+        }
 
         const data = await makeApiRequest<DataStoreListResponse>(url, "GET", undefined, queryParams);
 
@@ -115,7 +118,10 @@ Requires API key scope: universe-datastores.objects:list`,
           scope: params.scope,
         };
         if (params.page_token) queryParams.pageToken = params.page_token;
-        if (params.prefix) queryParams.filter = `id.startsWith("${params.prefix}")`;
+        if (params.prefix) {
+          const safe = params.prefix.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+          queryParams.filter = `id.startsWith("${safe}")`;
+        }
 
         const data = await makeApiRequest<DataStoreEntryListResponse>(url, "GET", undefined, queryParams);
 

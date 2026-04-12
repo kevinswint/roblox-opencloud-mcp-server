@@ -131,8 +131,13 @@ export function truncateResponse(
   hint?: string
 ): string {
   if (text.length <= CHARACTER_LIMIT) return text;
-  const truncated = text.slice(0, CHARACTER_LIMIT);
-  const suffix = `\n\n---\n⚠️ Response truncated (${text.length} → ${CHARACTER_LIMIT} chars).${hint ? ` ${hint}` : " Use pagination or filters to narrow results."}`;
+  let end = CHARACTER_LIMIT;
+  // Avoid splitting a UTF-16 surrogate pair: if we landed on a high surrogate,
+  // back up one code unit so we don't emit a lone surrogate.
+  const code = text.charCodeAt(end - 1);
+  if (code >= 0xd800 && code <= 0xdbff) end--;
+  const truncated = text.slice(0, end);
+  const suffix = `\n\n---\n⚠️ Response truncated (${text.length} → ${end} chars).${hint ? ` ${hint}` : " Use pagination or filters to narrow results."}`;
   return truncated + suffix;
 }
 
