@@ -44,11 +44,13 @@ export interface DataStoreEntry {
 }
 
 export interface DataStoreListResponse {
+  [key: string]: unknown;
   dataStores: Array<{ name: string; createTime?: string }>;
   nextPageToken?: string;
 }
 
 export interface DataStoreEntryListResponse {
+  [key: string]: unknown;
   dataStoreEntries: DataStoreEntry[];
   nextPageToken?: string;
 }

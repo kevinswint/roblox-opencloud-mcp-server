@@ -304,4 +304,122 @@ Requires API key scope: universe-datastores.objects:write`,
       }
     })
   );
+
+  // ── Increment Data Store Entry ───────────────────────────────────────
+  const IncrementEntrySchema = z.object({
+    universe_id: universeIdSchema,
+    data_store_name: z.string().min(1).describe("Name of the data store"),
+    entry_id: z.string().min(1).describe("The key/ID of the entry to increment"),
+    amount: z
+      .number()
+      .describe("Amount to add to the current value (use a negative number to decrement)"),
+    scope: z.string().default("global").describe("Data store scope (default: 'global')"),
+    users: z.array(z.string()).optional().describe("User IDs to associate with this entry (GDPR)"),
+    response_format: responseFormatSchema,
+  }).strict();
+
+  server.registerTool(
+    "roblox_increment_data_store_entry",
+    {
+      title: "Increment Data Store Entry",
+      description: `Atomically add to (or subtract from) a numeric data store entry.
+
+Useful for counters and currency balances where racing writes would
+otherwise corrupt the value. Pass a negative \`amount\` to decrement.
+
+⚠️ Writes. Creates the entry if it does not exist.
+
+Requires API key scope: universe-datastores.objects:create, universe-datastores.objects:update`,
+      inputSchema: IncrementEntrySchema,
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+    },
+    wrapTool("roblox_increment_data_store_entry", async (params: z.infer<typeof IncrementEntrySchema>) => {
+      try {
+        const base = DATA_STORES_V2_BASE(params.universe_id);
+        const url = `${base}/${encodeURIComponent(params.data_store_name)}/entries/${encodeURIComponent(params.entry_id)}:increment`;
+        const queryParams = { scope: params.scope };
+        const body: Record<string, unknown> = { amount: params.amount };
+        if (params.users) body.users = params.users;
+
+        const result = await makeApiRequest<DataStoreEntry>(url, "POST", body, queryParams);
+
+        if (params.response_format === ResponseFormat.JSON) {
+          return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };
+        }
+
+        return {
+          content: [{
+            type: "text" as const,
+            text: `✅ Incremented **${params.entry_id}** by ${params.amount}. New value: ${JSON.stringify(result.value)}`,
+          }],
+        };
+      } catch (error) {
+        return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+      }
+    })
+  );
+
+  // ── List Data Store Entry Revisions ──────────────────────────────────
+  const ListRevisionsSchema = z.object({
+    universe_id: universeIdSchema,
+    data_store_name: z.string().min(1).describe("Name of the data store"),
+    entry_id: z.string().min(1).describe("The key/ID of the entry"),
+    scope: z.string().default("global").describe("Data store scope (default: 'global')"),
+    start_time: z.string().optional().describe("RFC3339 start of revision window (e.g. 2024-01-01T00:00:00Z)"),
+    end_time: z.string().optional().describe("RFC3339 end of revision window"),
+    page_size: pageSizeSchema,
+    page_token: pageTokenSchema,
+    response_format: responseFormatSchema,
+  }).strict();
+
+  server.registerTool(
+    "roblox_list_data_store_entry_revisions",
+    {
+      title: "List Data Store Entry Revisions",
+      description: `List prior revisions of a specific data store entry.
+
+Useful for auditing or rolling back changes. Returns revision IDs plus
+creation timestamps; fetch a specific revision with get_data_store_entry
+and a revisionId filter.
+
+Requires API key scope: universe-datastores.versions:list`,
+      inputSchema: ListRevisionsSchema,
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    wrapTool("roblox_list_data_store_entry_revisions", async (params: z.infer<typeof ListRevisionsSchema>) => {
+      try {
+        const base = DATA_STORES_V2_BASE(params.universe_id);
+        const url = `${base}/${encodeURIComponent(params.data_store_name)}/entries/${encodeURIComponent(params.entry_id)}:listRevisions`;
+        const queryParams: Record<string, unknown> = {
+          scope: params.scope,
+          maxPageSize: params.page_size,
+        };
+        if (params.page_token) queryParams.pageToken = params.page_token;
+        if (params.start_time) queryParams.startTime = params.start_time;
+        if (params.end_time) queryParams.endTime = params.end_time;
+
+        const data = await makeApiRequest<DataStoreEntryListResponse>(url, "GET", undefined, queryParams);
+
+        if (params.response_format === ResponseFormat.JSON) {
+          return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }], structuredContent: data };
+        }
+
+        const entries = data.dataStoreEntries || [];
+        const lines = [`# Revisions for ${params.entry_id}`, ""];
+        if (entries.length === 0) {
+          lines.push("_No revisions found in the specified window._");
+        } else {
+          entries.forEach((e) => {
+            lines.push(`- **${e.revisionId || "(no id)"}** — ${formatTimestamp(e.revisionCreateTime)}`);
+          });
+          if (data.nextPageToken) {
+            lines.push("", `_More results. Use page_token: \`${data.nextPageToken}\`_`);
+          }
+        }
+        return { content: [{ type: "text" as const, text: truncateResponse(lines.join("\n")) }] };
+      } catch (error) {
+        return { content: [{ type: "text" as const, text: handleApiError(error) }] };
+      }
+    })
+  );
 }
