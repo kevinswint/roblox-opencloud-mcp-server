@@ -75,7 +75,7 @@ Public endpoint — no scope required.`,
   // ── List Universe Badges ──────────────────────────────────────────────
   const ListUniverseBadgesSchema = z.object({
     universe_id: universeIdSchema,
-    limit: z.number().int().min(1).max(100).default(25).describe("Page size (1-100)"),
+    limit: z.union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)]).default(25).describe("Page size (allowed: 10, 25, 50, 100)"),
     cursor: z.string().optional().describe("Pagination cursor"),
     sort_order: z.enum(["Asc", "Desc"]).default("Asc").describe("Sort order by creation date"),
     response_format: responseFormatSchema,
@@ -131,7 +131,7 @@ Public endpoint — no scope required.`,
   // ── List User Badges ──────────────────────────────────────────────────
   const ListUserBadgesSchema = z.object({
     user_id: z.string().regex(/^\d+$/).describe("User ID"),
-    limit: z.number().int().min(1).max(100).default(25).describe("Page size (1-100)"),
+    limit: z.union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)]).default(25).describe("Page size (allowed: 10, 25, 50, 100)"),
     cursor: z.string().optional().describe("Pagination cursor"),
     sort_order: z.enum(["Asc", "Desc"]).default("Desc").describe("Sort order"),
     response_format: responseFormatSchema,

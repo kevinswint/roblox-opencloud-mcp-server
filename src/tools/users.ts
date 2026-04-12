@@ -78,9 +78,9 @@ Public endpoint — no scope required for basic info. Optional scopes
   const GenerateThumbnailSchema = z.object({
     user_id: userIdSchema,
     size: z
-      .enum(["48x48", "60x60", "100x100", "150x150", "180x180", "352x352", "420x420", "720x720"])
-      .default("420x420")
-      .describe("Thumbnail size"),
+      .enum(["48", "50", "60", "75", "100", "110", "150", "180", "352", "420", "720"])
+      .default("420")
+      .describe("Thumbnail size in pixels (square). API accepts specific values only."),
     format: z.enum(["PNG", "JPEG"]).default("PNG").describe("Output format"),
     shape: z.enum(["ROUND", "SQUARE"]).default("ROUND").describe("Thumbnail shape"),
     response_format: responseFormatSchema,
