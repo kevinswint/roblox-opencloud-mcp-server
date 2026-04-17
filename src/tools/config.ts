@@ -17,9 +17,11 @@ import { ConfigVersion, ConfigRevisionListResponse, ResponseFormat } from "../ty
 import { wrapTool } from "../services/logger.js";
 
 const repositorySchema = z
-  .string()
-  .min(1)
-  .describe("Repository name within the universe's config store (e.g. 'game-config', 'feature-flags')");
+  .enum(["InExperienceConfig", "DataStoresConfig"])
+  .describe(
+    "Repository name. Roblox restricts this to a fixed set: 'InExperienceConfig' " +
+      "(runtime feature flags / game config) or 'DataStoresConfig' (data store configuration)."
+  );
 
 export function registerConfigTools(server: McpServer): void {
   // ── Get Published Config ──────────────────────────────────────────────
@@ -144,7 +146,7 @@ Requires API key scope: universe:write`,
     wrapTool("roblox_update_config_draft", async (params: z.infer<typeof UpdateDraftSchema>) => {
       try {
         const url = `${CONFIGS_REPOSITORY_BASE(params.universe_id, params.repository)}/draft`;
-        const result = await makeApiRequest<ConfigVersion>(url, "PATCH", { data: params.data });
+        const result = await makeApiRequest<ConfigVersion>(url, "PATCH", { entries: params.data });
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };
@@ -188,7 +190,7 @@ Requires API key scope: universe:write`,
     wrapTool("roblox_replace_config_draft", async (params: z.infer<typeof ReplaceDraftSchema>) => {
       try {
         const url = `${CONFIGS_REPOSITORY_BASE(params.universe_id, params.repository)}/draft:overwrite`;
-        const result = await makeApiRequest<ConfigVersion>(url, "PUT", { data: params.data });
+        const result = await makeApiRequest<ConfigVersion>(url, "PUT", { entries: params.data });
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };
@@ -266,7 +268,7 @@ Requires API key scope: universe:write`,
     wrapTool("roblox_publish_config", async (params: z.infer<typeof PublishConfigSchema>) => {
       try {
         const url = `${CONFIGS_REPOSITORY_BASE(params.universe_id, params.repository)}/publish`;
-        const result = await makeApiRequest<ConfigVersion>(url, "POST");
+        const result = await makeApiRequest<ConfigVersion>(url, "POST", {});
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };

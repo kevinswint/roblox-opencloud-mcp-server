@@ -73,7 +73,7 @@ Requires API key scope: universe.ordered-data-store.scope.entry:read`,
         const url = entriesPath(params.universe_id, params.ordered_data_store_name, params.scope);
         const queryParams: Record<string, unknown> = {
           maxPageSize: params.page_size,
-          orderBy: params.order_by === "ASC" ? "value ASC" : "value DESC",
+          orderBy: params.order_by === "ASC" ? "value" : "value desc",
         };
         if (params.page_token) queryParams.pageToken = params.page_token;
 

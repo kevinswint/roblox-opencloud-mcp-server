@@ -45,7 +45,7 @@ export interface DataStoreEntry {
 
 export interface DataStoreListResponse {
   [key: string]: unknown;
-  dataStores: Array<{ name: string; createTime?: string }>;
+  dataStores: Array<{ name?: string; id?: string; path?: string; createTime?: string; state?: string }>;
   nextPageToken?: string;
 }
 

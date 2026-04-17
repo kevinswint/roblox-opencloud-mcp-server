@@ -58,10 +58,14 @@ Requires API key scope: universe-datastores.objects:list`,
 
         const data = await makeApiRequest<DataStoreListResponse>(url, "GET", undefined, queryParams);
 
+        const normalizedStores = (data.dataStores || []).map((ds) => ({
+          ...ds,
+          name: ds.id ?? ds.name,
+        }));
         const output = {
-          dataStores: data.dataStores || [],
+          dataStores: normalizedStores,
           nextPageToken: data.nextPageToken,
-          count: (data.dataStores || []).length,
+          count: normalizedStores.length,
         };
 
         if (params.response_format === ResponseFormat.JSON) {
@@ -73,7 +77,7 @@ Requires API key scope: universe-datastores.objects:list`,
           lines.push("No data stores found.");
         } else {
           for (const ds of output.dataStores) {
-            lines.push(`- **${ds.name}**`);
+            lines.push(`- **${ds.id ?? ds.name}**`);
           }
           if (output.nextPageToken) {
             lines.push("", `_More results available. Use page_token: \`${output.nextPageToken}\`_`);
@@ -245,14 +249,29 @@ Requires API key scope: universe-datastores.objects:write`,
     wrapTool("roblox_set_data_store_entry", async (params: z.infer<typeof SetEntrySchema>) => {
       try {
         const base = DATA_STORES_V2_BASE(params.universe_id);
-        const url = `${base}/${encodeURIComponent(params.data_store_name)}/entries/${encodeURIComponent(params.entry_id)}`;
-        const queryParams = { scope: params.scope };
+        const storePath = `${base}/${encodeURIComponent(params.data_store_name)}`;
+        const queryParams: Record<string, unknown> = { scope: params.scope };
 
         const body: Record<string, unknown> = { value: params.value };
         if (params.users) body.users = params.users;
         if (params.metadata) body.metadata = params.metadata;
 
-        const result = await makeApiRequest<DataStoreEntry>(url, "PATCH", body, queryParams);
+        let result: DataStoreEntry;
+        try {
+          // Try PATCH (update existing entry)
+          const patchUrl = `${storePath}/entries/${encodeURIComponent(params.entry_id)}`;
+          result = await makeApiRequest<DataStoreEntry>(patchUrl, "PATCH", body, queryParams);
+        } catch (patchError: unknown) {
+          // If 404 (entry or store doesn't exist), fall back to POST (create)
+          const isAxios = typeof patchError === "object" && patchError !== null && "response" in patchError;
+          const status = isAxios ? (patchError as { response?: { status?: number } }).response?.status : undefined;
+          if (status === 404) {
+            const createUrl = `${storePath}/entries`;
+            result = await makeApiRequest<DataStoreEntry>(createUrl, "POST", body, { ...queryParams, id: params.entry_id });
+          } else {
+            throw patchError;
+          }
+        }
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };

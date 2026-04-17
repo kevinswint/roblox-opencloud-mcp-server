@@ -92,7 +92,7 @@ Requires API key scope: memory-store.queue:add`,
     wrapTool("roblox_memory_store_queue_add", async (params: z.infer<typeof QueueAddSchema>) => {
       try {
         const url = queueItemsPath(params.universe_id, params.queue_name);
-        const body: Record<string, unknown> = { value: params.value };
+        const body: Record<string, unknown> = { data: params.value };
         if (params.priority !== undefined) body.priority = params.priority;
         if (params.expiration !== undefined) body.expiration = params.expiration;
 
@@ -266,7 +266,7 @@ Requires API key scope: memory-store.sorted-map:read`,
         const url = sortedMapItemsPath(params.universe_id, params.sorted_map_name);
         const queryParams: Record<string, unknown> = {
           maxPageSize: params.page_size,
-          orderBy: params.order_by === "DESC" ? "sortKey DESC" : "sortKey ASC",
+          orderBy: params.order_by === "DESC" ? "desc" : "asc",
         };
         if (params.page_token) queryParams.pageToken = params.page_token;
         if (params.filter) queryParams.filter = params.filter;

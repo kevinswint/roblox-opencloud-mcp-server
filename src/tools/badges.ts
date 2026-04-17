@@ -223,6 +223,7 @@ Public endpoint — no scope required.`,
   // ── Get Universe Free Badge Quota ─────────────────────────────────────
   const QuotaSchema = z.object({
     universe_id: universeIdSchema,
+    response_format: responseFormatSchema,
   }).strict();
 
   server.registerTool(
@@ -238,11 +239,14 @@ Public endpoint — no scope required.`,
     wrapTool("roblox_get_universe_badge_quota", async (params: z.infer<typeof QuotaSchema>) => {
       try {
         const url = `${BADGES_PUBLIC_V1}/universes/${params.universe_id}/free-badges-quota`;
-        const data = await makeApiRequest<Record<string, unknown>>(url, "GET");
+        const data = await makeApiRequest<unknown>(url, "GET");
+        const wrapped = typeof data === "object" && data !== null
+          ? (data as Record<string, unknown>)
+          : { quota: data };
 
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
-          structuredContent: data,
+          content: [{ type: "text" as const, text: JSON.stringify(wrapped, null, 2) }],
+          structuredContent: wrapped,
         };
       } catch (error) {
         return { content: [{ type: "text" as const, text: handleApiError(error) }] };

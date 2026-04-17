@@ -7,8 +7,9 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import FormData from "form-data";
 import { universeIdSchema, responseFormatSchema, pageTokenSchema, pageSizeSchema } from "../schemas/common.js";
-import { makeApiRequest, handleApiError, truncateResponse } from "../services/api-client.js";
+import { makeApiRequest, makeMultipartRequest, handleApiError, truncateResponse } from "../services/api-client.js";
 import { DEVELOPER_PRODUCTS_BASE, GAME_PASSES_BASE } from "../constants.js";
 import { DeveloperProduct, GamePass, ResponseFormat } from "../types.js";
 import { wrapTool } from "../services/logger.js";
@@ -63,7 +64,7 @@ Requires API key scope: universe-developer-products:read`,
           lines.push("No developer products found.");
         } else {
           for (const p of products) {
-            lines.push(`- **${p.displayName}** — ${p.priceInRobux != null ? `R$${p.priceInRobux}` : "Free"}`);
+            lines.push(`- **${p.name ?? p.displayName}** — ${p.priceInRobux != null ? `R$${p.priceInRobux}` : "Free"}`);
             if (p.description) lines.push(`  ${p.description}`);
           }
           if (data.nextPageToken) {
@@ -102,13 +103,12 @@ Requires API key scope: universe-developer-products:write`,
     wrapTool("roblox_create_developer_product", async (params: z.infer<typeof CreateDevProductSchema>) => {
       try {
         const url = DEVELOPER_PRODUCTS_BASE(params.universe_id);
-        const body = {
-          displayName: params.display_name,
-          description: params.description,
-          priceInRobux: params.price_in_robux,
-        };
+        const form = new FormData();
+        form.append("Name", params.display_name);
+        form.append("Description", params.description);
+        form.append("PriceInRobux", String(params.price_in_robux));
 
-        const result = await makeApiRequest<DeveloperProduct>(url, "POST", body);
+        const result = await makeMultipartRequest<DeveloperProduct>(url, form);
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };
@@ -167,7 +167,7 @@ Requires API key scope: universe-game-passes:read`,
           for (const gp of passes) {
             const price = gp.priceInRobux != null ? `R$${gp.priceInRobux}` : "Not for sale";
             const sale = gp.forSale ? "🟢 For sale" : "🔴 Not for sale";
-            lines.push(`- **${gp.displayName}** — ${price} (${sale})`);
+            lines.push(`- **${gp.name ?? gp.displayName}** — ${price} (${sale})`);
             if (gp.description) lines.push(`  ${gp.description}`);
           }
           if (data.nextPageToken) {
@@ -207,14 +207,25 @@ Requires API key scope: universe-game-passes:write`,
     wrapTool("roblox_create_game_pass", async (params: z.infer<typeof CreateGamePassSchema>) => {
       try {
         const url = GAME_PASSES_BASE(params.universe_id);
-        const body: Record<string, unknown> = {
-          displayName: params.display_name,
-          description: params.description,
-          forSale: params.for_sale,
-        };
-        if (params.price_in_robux !== undefined) body.priceInRobux = params.price_in_robux;
+        const form = new FormData();
+        form.append("Name", params.display_name);
+        form.append("Description", params.description);
+        form.append("IsForSale", String(params.for_sale));
+        if (params.price_in_robux !== undefined) form.append("Price", String(params.price_in_robux));
+        // Icon is required for game pass creation — use a minimal 512x512 placeholder PNG
+        // Base64-encoded 512x512 white PNG (minimal valid file)
+        const placeholderIcon = Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7GkOtAAAADklEQVR4nO3BAQ0AAADCoPdP" +
+          "bQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAfgNfxAABLaQrHAAAAABJRU5ErkJggg==",
+          "base64"
+        );
+        form.append("File", placeholderIcon, {
+          filename: "icon.png",
+          contentType: "image/png",
+        });
 
-        const result = await makeApiRequest<GamePass>(url, "POST", body);
+        const result = await makeMultipartRequest<GamePass>(url, form);
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };

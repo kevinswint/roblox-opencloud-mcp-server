@@ -391,6 +391,30 @@ Cloud release.
   finalized its shape in early 2026. If your agent seems to see
   different operation response formats between sessions, that's why.
 
+### Creator Configs — fixed-enum repository names + broken publish
+
+The public Creator Configs API
+(`/creator-configs-public-api/v1/configs/universes/{id}/repositories/{repo}`)
+has two surprises that cost a few hours of debugging:
+
+1. **The `{repo}` path segment is a closed enum, not a free-form name.**
+   The docs read like you can pick any repository name. You can't.
+   Probing returns `The value 'X' is not valid` for everything except:
+   - `InExperienceConfig` — runtime feature flags / game config
+   - `DataStoresConfig` — data store configuration
+   The MCP server's `repositorySchema` now enforces this enum so
+   agents fail fast instead of chasing phantom 400s. If Roblox adds
+   more repositories, the schema needs an update.
+2. **`POST .../publish` returns 500 with an empty body on at least some
+   universes**, even after a valid draft has been written and the
+   draft-get / revisions endpoints behave normally. Draft edits still
+   persist. Treat a publish failure as "draft saved, live config
+   unchanged" rather than a transient error to retry blindly.
+3. The draft PATCH/PUT body uses `{entries: {...}}`, not `{data: {...}}`.
+   Sending `{data: ...}` returns 200 OK but silently stores nothing.
+   The MCP server now sends `entries` for `update_config_draft` and
+   `replace_config_draft`.
+
 ---
 
 ## The rate-limit ceiling
