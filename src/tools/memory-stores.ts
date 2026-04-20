@@ -237,9 +237,9 @@ Requires API key scope: memory-store.queue:discard`,
     universe_id: universeIdSchema,
     sorted_map_name: sortedMapNameSchema,
     order_by: z
-      .enum(["ASC", "DESC"])
-      .default("ASC")
-      .describe("Sort order by sort key: ASC (default) or DESC"),
+      .enum(["asc", "desc"])
+      .default("desc")
+      .describe("Sort order by sort key: 'desc' (default, highest sort key first) or 'asc'"),
     filter: z
       .string()
       .optional()
@@ -266,7 +266,7 @@ Requires API key scope: memory-store.sorted-map:read`,
         const url = sortedMapItemsPath(params.universe_id, params.sorted_map_name);
         const queryParams: Record<string, unknown> = {
           maxPageSize: params.page_size,
-          orderBy: params.order_by === "DESC" ? "desc" : "asc",
+          orderBy: params.order_by,
         };
         if (params.page_token) queryParams.pageToken = params.page_token;
         if (params.filter) queryParams.filter = params.filter;
