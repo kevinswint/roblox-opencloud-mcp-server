@@ -14,7 +14,7 @@ platform PM at Roblox, this file is a prioritized punchlist of what
 external tooling is asking for and why the existing half-measures
 aren't enough.
 
-**All content is as of 2026-04-11.** Open Cloud is moving fast —
+**All content is as of 2026-04-19.** Open Cloud is moving fast —
 entire surfaces have gone GA since the plan that produced this server
 was drafted. Cross-reference the dates on any claim below against
 [create.roblox.com/docs/cloud](https://create.roblox.com/docs/cloud).
@@ -452,22 +452,57 @@ cursor-based pagination (`cursor`/`limit`) is replaced by
 `pageToken`/`maxPageSize`, and scope name spelling differs
 (`datastores:write` vs `universe-datastores.objects:update`).
 
+**Data store list identifiers are parsed from `path`.** The published
+OpenAPI for `ListDataStores` only guarantees a `path` field of shape
+`universes/{id}/data-stores/{store_id}`. The live API also returns
+`id` and `name` fields with the same value, but those aren't in the
+spec — the MCP server treats `path` as the source of truth and
+extracts `store_id` as `name` for downstream tools. If you ever see
+a listed store that cannot be passed back into
+`list_data_store_entries`, check the `path` field directly.
+
 **Ordered Data Stores are not a subtype of Data Stores.** They live
 at a different URL path (`/ordered-data-stores/` vs `/data-stores/`)
 and use different scope names
 (`universe.ordered-data-store.scope.entry:*`). You cannot use a
 Data Store scope to read an Ordered Data Store.
 
+**Ordered Data Store `orderBy` is a string enum, not ASC/DESC.** The
+API accepts only `"value"` (ascending) or `"value desc"` (descending)
+— anything else returns `Invalid order by. It must be 'value',
+'value desc', or no input`. The MCP schema exposes these two literal
+strings directly; default is `"value desc"`.
+
 **Memory Store scopes use a bare prefix.** Where most scopes look
 like `universe.<resource>:<action>`, Memory Store scopes are
 `universe.memory-store.queue:*` and
 `universe.memory-store.sorted-map:*`. Plan accordingly.
+
+**Memory Store Sorted Map `orderBy` is `asc`/`desc`** — lowercase,
+and uses a different grammar than Ordered Data Stores (which use
+`value`/`value desc`). The MCP schema exposes the two literal values;
+default is `"desc"` (highest sort key first).
+
+**Memory Store Queue Add body uses `data`, not `value`.** The queue
+item payload is sent under the key `data` in the POST body (the API
+rejects `value` with `The required field 'data' is missing`). The MCP
+tool still exposes a `value` parameter for ergonomic symmetry with
+sorted-map items and handles the translation internally.
 
 **Game Passes and Developer Products have different base URLs and
 different scope shapes.**
 `/developer-products/v2/` uses `universe.developer-product:read`,
 `/game-passes/v1/` uses `universe.game-pass:read`. There's no single
 "monetization scope" and there's no uniformity.
+
+**Developer Product and Game Pass GET URLs require a `/creator`
+suffix.** The published spec shows
+`GET /developer-products/v2/universes/{id}/developer-products/{productId}/creator`
+(note the trailing `/creator`); the naked
+`.../developer-products/{productId}` path only accepts PATCH. Hitting
+the wrong shape returns a 404 with an empty body. Game passes mirror
+this: `GET /game-passes/v1/universes/{id}/game-passes/{gamePassId}/creator`.
+Both MCP `roblox_get_*` tools now append `/creator` automatically.
 
 **Creator Store Products are separate from universe monetization.**
 They live at `/cloud/v2/creator-store-products` with their own
