@@ -58,9 +58,15 @@ Requires API key scope: universe-datastores.objects:list`,
 
         const data = await makeApiRequest<DataStoreListResponse>(url, "GET", undefined, queryParams);
 
+        // Per OpenAPI spec, DataStore has only `path` (format "universes/{id}/data-stores/{store_id}").
+        // Extract the store_id from path and expose it as `name` — that's the identifier
+        // list_data_store_entries expects in its URL. Fall back to id/name for resilience
+        // against undocumented fields the live API also returns.
+        const nameFromPath = (ds: { path?: string; id?: string; name?: string }) =>
+          ds.path?.split("/").pop() || ds.id || ds.name || "";
         const normalizedStores = (data.dataStores || []).map((ds) => ({
           ...ds,
-          name: ds.id ?? ds.name,
+          name: nameFromPath(ds),
         }));
         const output = {
           dataStores: normalizedStores,
@@ -77,7 +83,7 @@ Requires API key scope: universe-datastores.objects:list`,
           lines.push("No data stores found.");
         } else {
           for (const ds of output.dataStores) {
-            lines.push(`- **${ds.id ?? ds.name}**`);
+            lines.push(`- **${ds.name}**`);
           }
           if (output.nextPageToken) {
             lines.push("", `_More results available. Use page_token: \`${output.nextPageToken}\`_`);
