@@ -330,18 +330,24 @@ Requires API key scope: universe-developer-products:write`,
       try {
         const url = `${DEVELOPER_PRODUCTS_BASE(params.universe_id)}/${params.developer_product_id}`;
 
-        const body: Record<string, unknown> = {};
-        const updateMask: string[] = [];
+        // The developer-products/v2 PATCH endpoint rejects application/json (HTTP 415).
+        // It accepts the same multipart/form-data shape used by create, with PascalCase
+        // field names. Only fields included in the form are updated; omitted fields
+        // are left untouched. No updateMask query param.
+        const form = new FormData();
+        const changedFields: string[] = [];
+        if (params.display_name !== undefined) { form.append("Name", params.display_name); changedFields.push("displayName"); }
+        if (params.description !== undefined) { form.append("Description", params.description); changedFields.push("description"); }
+        if (params.price_in_robux !== undefined) { form.append("PriceInRobux", String(params.price_in_robux)); changedFields.push("priceInRobux"); }
 
-        if (params.display_name !== undefined) { body.displayName = params.display_name; updateMask.push("displayName"); }
-        if (params.description !== undefined) { body.description = params.description; updateMask.push("description"); }
-        if (params.price_in_robux !== undefined) { body.priceInRobux = params.price_in_robux; updateMask.push("priceInRobux"); }
-
-        if (updateMask.length === 0) {
+        if (changedFields.length === 0) {
           return { content: [{ type: "text" as const, text: "No fields to update. Provide at least one field to change." }] };
         }
 
-        const result = await makeApiRequest<DeveloperProduct>(url, "PATCH", body, { updateMask: updateMask.join(",") });
+        // The endpoint returns 204 No Content on success, so makeMultipartRequest returns null/undefined.
+        // Read the product back so the response mirrors the old contract.
+        await makeMultipartRequest<unknown>(url, form, "PATCH");
+        const result = await makeApiRequest<DeveloperProduct>(`${url}/creator`, "GET");
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };
@@ -350,7 +356,7 @@ Requires API key scope: universe-developer-products:write`,
         return {
           content: [{
             type: "text" as const,
-            text: `✅ Updated developer product **"${result.displayName}"**.\n\nFields changed: ${updateMask.join(", ")}`,
+            text: `✅ Updated developer product **"${result.displayName}"**.\n\nFields changed: ${changedFields.join(", ")}`,
           }],
         };
       } catch (error) {
@@ -446,19 +452,23 @@ Requires API key scope: universe-game-passes:write`,
       try {
         const url = `${GAME_PASSES_BASE(params.universe_id)}/${params.game_pass_id}`;
 
-        const body: Record<string, unknown> = {};
-        const updateMask: string[] = [];
+        // Same story as update_developer_product: the PATCH endpoint rejects application/json (HTTP 415).
+        // It accepts the same multipart/form-data shape used by create. Note game-pass field names:
+        // Name / Description / IsForSale / Price (not PriceInRobux).
+        const form = new FormData();
+        const changedFields: string[] = [];
+        if (params.display_name !== undefined) { form.append("Name", params.display_name); changedFields.push("displayName"); }
+        if (params.description !== undefined) { form.append("Description", params.description); changedFields.push("description"); }
+        if (params.for_sale !== undefined) { form.append("IsForSale", String(params.for_sale)); changedFields.push("forSale"); }
+        if (params.price_in_robux !== undefined) { form.append("Price", String(params.price_in_robux)); changedFields.push("priceInRobux"); }
 
-        if (params.display_name !== undefined) { body.displayName = params.display_name; updateMask.push("displayName"); }
-        if (params.description !== undefined) { body.description = params.description; updateMask.push("description"); }
-        if (params.price_in_robux !== undefined) { body.priceInRobux = params.price_in_robux; updateMask.push("priceInRobux"); }
-        if (params.for_sale !== undefined) { body.forSale = params.for_sale; updateMask.push("forSale"); }
-
-        if (updateMask.length === 0) {
+        if (changedFields.length === 0) {
           return { content: [{ type: "text" as const, text: "No fields to update. Provide at least one field to change." }] };
         }
 
-        const result = await makeApiRequest<GamePass>(url, "PATCH", body, { updateMask: updateMask.join(",") });
+        // Endpoint returns 204 No Content; read the pass back for the response contract.
+        await makeMultipartRequest<unknown>(url, form, "PATCH");
+        const result = await makeApiRequest<GamePass>(`${url}/creator`, "GET");
 
         if (params.response_format === ResponseFormat.JSON) {
           return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }], structuredContent: result };
@@ -467,7 +477,7 @@ Requires API key scope: universe-game-passes:write`,
         return {
           content: [{
             type: "text" as const,
-            text: `✅ Updated game pass **"${result.displayName}"**.\n\nFields changed: ${updateMask.join(", ")}`,
+            text: `✅ Updated game pass **"${result.displayName}"**.\n\nFields changed: ${changedFields.join(", ")}`,
           }],
         };
       } catch (error) {
