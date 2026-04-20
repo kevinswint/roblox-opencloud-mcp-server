@@ -269,7 +269,9 @@ Requires API key scope: universe-developer-products:read`,
     },
     wrapTool("roblox_get_developer_product", async (params: z.infer<typeof GetDevProductSchema>) => {
       try {
-        const url = `${DEVELOPER_PRODUCTS_BASE(params.universe_id)}/${params.developer_product_id}`;
+        // GET requires the `/creator` suffix per the v1.json OpenAPI spec in Roblox/creator-docs.
+        // The naked `.../developer-products/{productId}` URL only accepts PATCH.
+        const url = `${DEVELOPER_PRODUCTS_BASE(params.universe_id)}/${params.developer_product_id}/creator`;
         const product = await makeApiRequest<DeveloperProduct>(url, "GET");
 
         if (params.response_format === ResponseFormat.JSON) {
@@ -381,7 +383,8 @@ Requires API key scope: universe-game-passes:read`,
     },
     wrapTool("roblox_get_game_pass", async (params: z.infer<typeof GetGamePassSchema>) => {
       try {
-        const url = `${GAME_PASSES_BASE(params.universe_id)}/${params.game_pass_id}`;
+        // GET requires the `/creator` suffix — mirrors the developer-products API shape.
+        const url = `${GAME_PASSES_BASE(params.universe_id)}/${params.game_pass_id}/creator`;
         const gamePass = await makeApiRequest<GamePass>(url, "GET");
 
         if (params.response_format === ResponseFormat.JSON) {
