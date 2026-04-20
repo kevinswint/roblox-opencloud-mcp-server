@@ -47,9 +47,9 @@ export function registerOrderedDataStoreTools(server: McpServer): void {
     ordered_data_store_name: orderedDataStoreNameSchema,
     scope: scopeSchema,
     order_by: z
-      .enum(["ASC", "DESC"])
-      .default("DESC")
-      .describe("Sort order by value: DESC (highest first, default) or ASC"),
+      .enum(["value", "value desc"])
+      .default("value desc")
+      .describe("Sort order: 'value desc' (highest first, default) or 'value' (ascending)"),
     page_size: pageSizeSchema,
     page_token: pageTokenSchema,
     response_format: responseFormatSchema,
@@ -73,7 +73,7 @@ Requires API key scope: universe.ordered-data-store.scope.entry:read`,
         const url = entriesPath(params.universe_id, params.ordered_data_store_name, params.scope);
         const queryParams: Record<string, unknown> = {
           maxPageSize: params.page_size,
-          orderBy: params.order_by === "ASC" ? "value" : "value desc",
+          orderBy: params.order_by,
         };
         if (params.page_token) queryParams.pageToken = params.page_token;
 
