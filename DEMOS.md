@@ -1,4 +1,4 @@
-# Creator Hub MCP — Demos
+# Roblox Open Cloud MCP Server — Demos
 
 This file walks through end-to-end agent flows that exercise the server
 against a real Roblox experience. Each demo is written as a prompt you
@@ -21,15 +21,15 @@ npm install
 npm run build
 
 # 2. Register with Claude Code (stdio)
-claude mcp add creator-hub-mcp -- \
-  env ROBLOX_API_KEY=YOUR_TEST_KEY \
-  node "$(pwd)/dist/index.js"
+claude mcp add roblox-opencloud-mcp \
+  -e ROBLOX_API_KEY=YOUR_TEST_KEY \
+  -- node "$(pwd)/dist/index.js"
 
 # 3. Sanity check — list every tool
 npm run list-tools
 ```
 
-You should see ~95 tools grouped into 18 domains.
+You should see 96 tools grouped into 18 domains.
 
 ---
 

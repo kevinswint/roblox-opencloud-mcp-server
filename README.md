@@ -1,4 +1,4 @@
-# Creator Hub MCP — Roblox Open Cloud for AI Agents
+# Roblox Open Cloud MCP Server
 
 A production-shape MCP (Model Context Protocol) server that wraps the
 public Roblox Open Cloud surface as typed tools for AI agents. Use it
@@ -9,7 +9,7 @@ Claude Desktop, Cursor, or any MCP-compatible client.
 
 > **v0.1.1** — **96 tools** across **18 domains**.
 > Paired with a strategic [LIMITATIONS.md](LIMITATIONS.md) that maps
-> the programmatic gaps in the Creator Hub surface. The server is
+> the programmatic gaps in the Open Cloud surface. The server is
 > as useful for telling you what you _can't_ do from outside Roblox
 > as it is for what you can.
 
@@ -29,9 +29,9 @@ npm run build
 #    with the scopes you need (see "Scopes" below)
 
 # 3. Register with Claude Code (stdio transport)
-claude mcp add creator-hub-mcp -- \
-  env ROBLOX_API_KEY=your_key_here \
-  node "$(pwd)/dist/index.js"
+claude mcp add roblox-opencloud-mcp \
+  -e ROBLOX_API_KEY=your_key_here \
+  -- node "$(pwd)/dist/index.js"
 
 # 4. Verify — lists every registered tool
 npm run list-tools

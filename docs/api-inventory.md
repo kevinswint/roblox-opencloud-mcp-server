@@ -1,6 +1,6 @@
 # Roblox Open Cloud API Inventory
 
-_Generated 2026-04-11 as part of Build C (Creator Hub MCP v0.1) Phase 0 discovery._
+_Generated 2026-04-11 as part of Roblox Open Cloud MCP Server v0.1 Phase 0 discovery._
 _Source: research crawl of `create.roblox.com/docs/cloud/reference`._
 
 ## Summary of Findings
