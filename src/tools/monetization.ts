@@ -103,10 +103,20 @@ Requires API key scope: universe-developer-products:write`,
     wrapTool("roblox_create_developer_product", async (params: z.infer<typeof CreateDevProductSchema>) => {
       try {
         const url = DEVELOPER_PRODUCTS_BASE(params.universe_id);
+        // v2 API requires camelCase field names per the OpenAPI spec at
+        // github.com/Roblox/creator-docs/.../developer-products-api/v1.json
+        // (`name`, `description`, `price`, `isForSale`). Using PascalCase
+        // (PriceInRobux/Name/Description) silently no-ops the field — the
+        // request returns 204 but no field is updated.
+        // When creating with a non-zero price, also set isForSale=true so the
+        // product lands purchasable on first publish.
         const form = new FormData();
-        form.append("Name", params.display_name);
-        form.append("Description", params.description);
-        form.append("PriceInRobux", String(params.price_in_robux));
+        form.append("name", params.display_name);
+        form.append("description", params.description);
+        form.append("price", String(params.price_in_robux));
+        if (params.price_in_robux > 0) {
+          form.append("isForSale", "true");
+        }
 
         const result = await makeMultipartRequest<DeveloperProduct>(url, form);
 
@@ -309,6 +319,12 @@ Requires API key scope: universe-developer-products:read`,
     display_name: z.string().min(1).max(100).optional().describe("New display name"),
     description: z.string().max(1000).optional().describe("New description"),
     price_in_robux: z.number().int().min(0).optional().describe("New price in Robux"),
+    is_for_sale: z
+      .boolean()
+      .optional()
+      .describe(
+        "Whether the product should be on sale. When setting a non-zero price for the first time on a product that's currently not for sale, omit this and the tool will infer true automatically."
+      ),
     response_format: responseFormatSchema,
   }).strict();
 
@@ -330,15 +346,44 @@ Requires API key scope: universe-developer-products:write`,
       try {
         const url = `${DEVELOPER_PRODUCTS_BASE(params.universe_id)}/${params.developer_product_id}`;
 
-        // The developer-products/v2 PATCH endpoint rejects application/json (HTTP 415).
-        // It accepts the same multipart/form-data shape used by create, with PascalCase
-        // field names. Only fields included in the form are updated; omitted fields
-        // are left untouched. No updateMask query param.
+        // v2 API requires camelCase field names per the OpenAPI spec at
+        // github.com/Roblox/creator-docs/.../developer-products-api/v1.json
+        // (`name`, `description`, `price`, `isForSale`, `imageFile`,
+        // `isRegionalPricingEnabled`, `storePageEnabled`). Using PascalCase
+        // (PriceInRobux/Name/Description/IsForSale) silently no-ops the
+        // field — the request returns 204 but no field actually changes.
+        //
+        // Subtle: when setting a non-zero price on a product that's
+        // currently not for sale, also send `isForSale=true` in the SAME
+        // request, otherwise Roblox accepts the price field but silently
+        // leaves the product unpurchasable (priceInformation stays null).
+        // When `isForSale` is sent alone (without a price) on a product
+        // that has no price, Roblox returns "InvalidIsForSale: Product
+        // must have a price to place it on sale". We auto-infer
+        // `isForSale=true` on the first non-zero price set so callers
+        // don't have to know this quirk. Pass `is_for_sale` explicitly
+        // to override (e.g. to take a product OFF sale without changing
+        // its price).
+        //
+        // No updateMask query param — only fields included in the form
+        // body are updated.
         const form = new FormData();
         const changedFields: string[] = [];
-        if (params.display_name !== undefined) { form.append("Name", params.display_name); changedFields.push("displayName"); }
-        if (params.description !== undefined) { form.append("Description", params.description); changedFields.push("description"); }
-        if (params.price_in_robux !== undefined) { form.append("PriceInRobux", String(params.price_in_robux)); changedFields.push("priceInRobux"); }
+        if (params.display_name !== undefined) { form.append("name", params.display_name); changedFields.push("name"); }
+        if (params.description !== undefined) { form.append("description", params.description); changedFields.push("description"); }
+        if (params.price_in_robux !== undefined) { form.append("price", String(params.price_in_robux)); changedFields.push("price"); }
+        const explicitIsForSale = params.is_for_sale;
+        const inferIsForSale =
+          explicitIsForSale === undefined &&
+          params.price_in_robux !== undefined &&
+          params.price_in_robux > 0;
+        if (explicitIsForSale !== undefined) {
+          form.append("isForSale", String(explicitIsForSale));
+          changedFields.push("isForSale");
+        } else if (inferIsForSale) {
+          form.append("isForSale", "true");
+          changedFields.push("isForSale (auto-inferred)");
+        }
 
         if (changedFields.length === 0) {
           return { content: [{ type: "text" as const, text: "No fields to update. Provide at least one field to change." }] };
